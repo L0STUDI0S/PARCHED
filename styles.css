@@ -3,6 +3,58 @@
     color: #1d1d1f;
 }
 
+.CustomerServiceBG{
+    background-image: linear-gradient(to bottom, rgb(44, 44, 153), rgb(0, 0, 61));
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+}
+
+.CSNavbar {
+    background-color: #6a62ff;         
+    width: 96%;
+    margin: 0 auto;
+    padding: 20px;
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    display: flex;
+    justify-content: center;
+}
+
+body { 
+    margin: 0; 
+    padding: 0; 
+} 
+
+.CSNavbar ul { 
+    margin: 0; 
+    padding: 0; 
+    list-style: none; 
+    display: flex; 
+    gap: 20px; 
+}
+
+
+.CSnav-title {
+    font-weight: 500;
+    color: #55389e;        
+    margin-right: 80px;               
+}
+
+.CSNavbar a {
+    color: #55389e;  
+    text-decoration: none;
+}
+
+.CSNavbar a:visited {
+    color: #55389e;  
+}
+
+
 a {
     color: #3a3a3a;
     text-decoration: none;
@@ -33,6 +85,15 @@ header h1 {
 .section-default {
     background-color: #f5f5f5;
     width: 60%;
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.section-mininews {
+    background-color: #c9c0ff;
+    width: 45%;
     margin: 40px auto;
     padding: 40px;
     border-radius: 20px;
