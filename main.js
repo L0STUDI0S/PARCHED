@@ -1,0 +1,29 @@
+const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
+const serverUrl = "parched-production-d543.up.railway.app";
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', async () => {
+        const sw = await navigator.serviceWorker.register('service-worker.js');
+        console.log('Service Worker Registered');
+
+        const subscription = await sw.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicVapidKey)
+        });
+
+        await fetch(`${serverUrl}/subscribe`, {
+            method: "POST",
+            body: JSON.stringify(subscription),
+            headers: { "Content-Type": "application/json" }
+        });
+
+        console.log('Subscribed for Push Notifications');
+    });
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+}
