@@ -1,5 +1,5 @@
 const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
-const serverUrl = "parched-production-d543.up.railway.app";
+const serverUrl = "https://parched-production-d543.up.railway.app";
 
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', async () => {
@@ -27,4 +27,5 @@ function urlBase64ToUint8Array(base64String) {
     const rawData = window.atob(base64);
     return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
+
 
