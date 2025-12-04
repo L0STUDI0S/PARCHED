@@ -18,7 +18,7 @@ if ('serviceWorker' in navigator) {
         });
 
         console.log('Subscribed for Push Notifications');
-    });
+    })
 }
 
 function urlBase64ToUint8Array(base64String) {
@@ -27,3 +27,4 @@ function urlBase64ToUint8Array(base64String) {
     const rawData = window.atob(base64);
     return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
+
