@@ -1,32 +1,42 @@
 import express from "express";
+import bodyParser from "body-parser";
 import fs from "fs";
 import webpush from "web-push";
 
 const app = express();
-app.use(express.json());
+app.use(bodyParser.json());
 
-// Serve static files from the root
-app.use(express.static("."));
-
-// VAPID keys
 const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
 const privateVapidKey = "whKH9NrcmO89SS2L-s8i9CeyfB46Kps_vo-tHAE29sk";
 
-webpush.setVapidDetails("mailto:you@example.com", publicVapidKey, privateVapidKey);
+webpush.setVapidDetails(
+  "mailto:you@example.com",
+  publicVapidKey,
+  privateVapidKey
+);
 
-// subscribers.json
-const subscribersPath = "./subscribers.json";
+// Load or create subscribers.json
+const subscribersFile = "subscribers.json";
 let subscribers = [];
-if (fs.existsSync(subscribersPath)) {
-    subscribers = JSON.parse(fs.readFileSync(subscribersPath, "utf8"));
+if (fs.existsSync(subscribersFile)) {
+    subscribers = JSON.parse(fs.readFileSync(subscribersFile, "utf8"));
 } else {
-    fs.writeFileSync(subscribersPath, JSON.stringify([]));
+    fs.writeFileSync(subscribersFile, JSON.stringify([]));
 }
 
 // Subscribe endpoint
 app.post("/subscribe", (req, res) => {
-    subscribers.push(req.body);
-    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
+    const sub = req.body;
+
+    // Check for duplicate subscriptions
+    if (!subscribers.find(s => s.endpoint === sub.endpoint)) {
+        subscribers.push(sub);
+        fs.writeFileSync(subscribersFile, JSON.stringify(subscribers, null, 2));
+        console.log("✅ New subscription added:", sub.endpoint);
+    } else {
+        console.log("ℹ️ Subscription already exists:", sub.endpoint);
+    }
+
     res.sendStatus(201);
 });
 
@@ -38,18 +48,17 @@ app.post("/notify", async (req, res) => {
         icon: req.body.icon
     });
 
-    for (let i = subscribers.length - 1; i >= 0; i--) {
+    for (const sub of subscribers) {
         try {
-            await webpush.sendNotification(subscribers[i], payload);
+            await webpush.sendNotification(sub, payload);
+            console.log("✅ Notification sent to:", sub.endpoint);
         } catch (err) {
-            console.error("Failed notification:", err);
-            subscribers.splice(i, 1);
+            console.error("❌ Failed to send notification:", err.body || err);
         }
     }
 
-    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
     res.sendStatus(200);
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

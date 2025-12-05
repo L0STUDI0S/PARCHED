@@ -10,10 +10,10 @@ webpush.setVapidDetails(
     privateVapidKey
 );
 
-const subscribersPath = "./subscribers.json";
+const subscribersFile = "./subscribers.json";
 let subscribers = [];
-if (fs.existsSync(subscribersPath)) {
-    subscribers = JSON.parse(fs.readFileSync(subscribersPath, "utf8"));
+if (fs.existsSync(subscribersFile)) {
+    subscribers = JSON.parse(fs.readFileSync(subscribersFile, "utf8"));
     console.log(`✅ Found ${subscribers.length} subscribers`);
 } else {
     console.log("⚠️ No subscribers found");

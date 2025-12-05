@@ -15,6 +15,7 @@ if ("serviceWorker" in navigator) {
             });
             console.log("✅ Subscription object created:", subscription);
 
+            console.log("Sending subscription to server...");
             const response = await fetch(`${serverUrl}/subscribe`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
