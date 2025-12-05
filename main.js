@@ -3,7 +3,7 @@ const serverUrl = "https://parched-production-d543.up.railway.app";
 
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
-        const sw = await navigator.serviceWorker.register("/PARCHED/service-worker.js");
+        const sw = await navigator.serviceWorker.register("./service-worker.js");
 
         console.log("Service Worker Registered");
 
