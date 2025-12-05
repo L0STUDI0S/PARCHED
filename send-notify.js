@@ -10,6 +10,7 @@ webpush.setVapidDetails(
     privateVapidKey
 );
 
+// Load subscribers
 let subscribers = [];
 if (fs.existsSync("subscribers.json")) {
     subscribers = JSON.parse(fs.readFileSync("subscribers.json", "utf8"));
@@ -21,11 +22,13 @@ const payload = JSON.stringify({
     icon: "Carator.png"
 });
 
-subscribers.forEach(async (sub) => {
-    try {
-        await webpush.sendNotification(sub, payload);
-        console.log("Notification sent!");
-    } catch (err) {
-        console.error(err);
+(async () => {
+    for (const sub of subscribers) {
+        try {
+            await webpush.sendNotification(sub, payload);
+            console.log("Notification sent to a subscriber!");
+        } catch (err) {
+            console.error("Failed to send notification:", err);
+        }
     }
-});
+})();
