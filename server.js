@@ -1,12 +1,13 @@
 import express from "express";
-import bodyParser from "body-parser";
 import fs from "fs";
+import path from "path";
 import webpush from "web-push";
+import cors from "cors";
 
 const app = express();
-app.use(bodyParser.json());
+app.use(express.json());
+app.use(cors());
 
-// Replace with your VAPID keys
 const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
 const privateVapidKey = "whKH9NrcmO89SS2L-s8i9CeyfB46Kps_vo-tHAE29sk";
 
@@ -16,22 +17,21 @@ webpush.setVapidDetails(
     privateVapidKey
 );
 
-// Load or create subscribers.json
+const subscribersPath = path.resolve("./subscribers.json");
 let subscribers = [];
-if (fs.existsSync("subscribers.json")) {
-    subscribers = JSON.parse(fs.readFileSync("subscribers.json", "utf8"));
+
+if (fs.existsSync(subscribersPath)) {
+    subscribers = JSON.parse(fs.readFileSync(subscribersPath, "utf8"));
 } else {
-    fs.writeFileSync("subscribers.json", JSON.stringify([]));
+    fs.writeFileSync(subscribersPath, JSON.stringify([]));
 }
 
-// Subscribe endpoint
 app.post("/subscribe", (req, res) => {
     subscribers.push(req.body);
-    fs.writeFileSync("subscribers.json", JSON.stringify(subscribers));
+    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
     res.sendStatus(201);
 });
 
-// Notify endpoint
 app.post("/notify", async (req, res) => {
     const payload = JSON.stringify({
         title: req.body.title,
@@ -39,14 +39,16 @@ app.post("/notify", async (req, res) => {
         icon: req.body.icon
     });
 
-    for (const sub of subscribers) {
+    for (let i = subscribers.length - 1; i >= 0; i--) {
         try {
-            await webpush.sendNotification(sub, payload);
+            await webpush.sendNotification(subscribers[i], payload);
         } catch (err) {
-            console.error(err);
+            console.error("Failed to send notification:", err);
+            subscribers.splice(i, 1); // remove invalid subscription
         }
     }
 
+    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
     res.sendStatus(200);
 });
 
