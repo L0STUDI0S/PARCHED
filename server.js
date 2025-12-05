@@ -1,7 +1,13 @@
-import http from "http";
+import express from "express";
 import fs from "fs";
+import path from "path";
 import webpush from "web-push";
-import { URL } from "url";
+
+const app = express();
+app.use(express.json());
+
+// Serve static files (index.html, main.js, service-worker.js)
+app.use(express.static(path.join(process.cwd(), "PARCHED")));
 
 // VAPID keys
 const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
@@ -13,8 +19,8 @@ webpush.setVapidDetails(
     privateVapidKey
 );
 
-// Load or create subscribers
-const subscribersPath = "./subscribers.json";
+// Load or create subscribers.json
+const subscribersPath = path.join(process.cwd(), "PARCHED", "subscribers.json");
 let subscribers = [];
 if (fs.existsSync(subscribersPath)) {
     subscribers = JSON.parse(fs.readFileSync(subscribersPath, "utf8"));
@@ -22,66 +28,34 @@ if (fs.existsSync(subscribersPath)) {
     fs.writeFileSync(subscribersPath, JSON.stringify([]));
 }
 
-// Minimal JSON parsing helper
-function parseJSON(req) {
-    return new Promise((resolve, reject) => {
-        let body = "";
-        req.on("data", chunk => body += chunk);
-        req.on("end", () => {
-            try {
-                resolve(JSON.parse(body));
-            } catch (err) {
-                reject(err);
-            }
-        });
-    });
-}
-
-// Create HTTP server
-const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    
-    if (req.method === "POST" && url.pathname === "/subscribe") {
-        try {
-            const data = await parseJSON(req);
-            subscribers.push(data);
-            fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
-            res.writeHead(201, {"Content-Type": "application/json"});
-            res.end(JSON.stringify({ success: true }));
-        } catch {
-            res.writeHead(400);
-            res.end("Invalid JSON");
-        }
-    } else if (req.method === "POST" && url.pathname === "/notify") {
-        try {
-            const data = await parseJSON(req);
-            const payload = JSON.stringify({
-                title: data.title,
-                body: data.body,
-                icon: data.icon
-            });
-
-            for (let i = subscribers.length - 1; i >= 0; i--) {
-                try {
-                    await webpush.sendNotification(subscribers[i], payload);
-                } catch (err) {
-                    console.error("Failed notification:", err);
-                    subscribers.splice(i, 1);
-                }
-            }
-
-            fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
-            res.writeHead(200);
-            res.end("Notifications sent");
-        } catch {
-            res.writeHead(400);
-            res.end("Invalid JSON");
-        }
-    } else {
-        res.writeHead(404);
-        res.end("Not found");
-    }
+// Subscribe endpoint
+app.post("/subscribe", (req, res) => {
+    subscribers.push(req.body);
+    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
+    res.sendStatus(201);
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Notify endpoint
+app.post("/notify", async (req, res) => {
+    const payload = JSON.stringify({
+        title: req.body.title,
+        body: req.body.body,
+        icon: req.body.icon
+    });
+
+    for (let i = subscribers.length - 1; i >= 0; i--) {
+        try {
+            await webpush.sendNotification(subscribers[i], payload);
+        } catch (err) {
+            console.error("Failed notification:", err);
+            subscribers.splice(i, 1); // Remove invalid subscriptions
+        }
+    }
+
+    fs.writeFileSync(subscribersPath, JSON.stringify(subscribers));
+    res.sendStatus(200);
+});
+
+// Start server
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
