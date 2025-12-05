@@ -12,8 +12,8 @@ webpush.setVapidDetails(
 
 // Load subscribers
 let subscribers = [];
-if (fs.existsSync("subscribers.json")) {
-    subscribers = JSON.parse(fs.readFileSync("subscribers.json", "utf8"));
+if (fs.existsSync("./subscribers.json")) {
+    subscribers = JSON.parse(fs.readFileSync("./subscribers.json", "utf8"));
 }
 
 const payload = JSON.stringify({
