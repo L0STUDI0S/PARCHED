@@ -2,6 +2,11 @@ import express from "express";
 import bodyParser from "body-parser";
 import fs from "fs";
 import webpush from "web-push";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(bodyParser.json());
@@ -28,7 +33,6 @@ if (fs.existsSync(subscribersFile)) {
 app.post("/subscribe", (req, res) => {
     const sub = req.body;
 
-    // Check for duplicate subscriptions
     if (!subscribers.find(s => s.endpoint === sub.endpoint)) {
         subscribers.push(sub);
         fs.writeFileSync(subscribersFile, JSON.stringify(subscribers, null, 2));
@@ -58,6 +62,14 @@ app.post("/notify", async (req, res) => {
     }
 
     res.sendStatus(200);
+});
+
+// Serve front-end files
+app.use(express.static(path.join(__dirname, "PARCHED"))); // adjust folder name
+
+// Fallback route
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "PARCHED", "index.html"));
 });
 
 const PORT = process.env.PORT || 3000;
