@@ -10,10 +10,13 @@ webpush.setVapidDetails(
     privateVapidKey
 );
 
-const subscribersPath = "./PARCHED/subscribers.json";
+const subscribersPath = "./subscribers.json";
 let subscribers = [];
 if (fs.existsSync(subscribersPath)) {
     subscribers = JSON.parse(fs.readFileSync(subscribersPath, "utf8"));
+    console.log(`✅ Found ${subscribers.length} subscribers`);
+} else {
+    console.log("⚠️ No subscribers found");
 }
 
 const payload = JSON.stringify({
@@ -26,9 +29,9 @@ const payload = JSON.stringify({
     for (const sub of subscribers) {
         try {
             await webpush.sendNotification(sub, payload);
-            console.log("Notification sent!");
+            console.log("✅ Notification sent to subscriber!");
         } catch (err) {
-            console.error("Failed notification:", err);
+            console.error("❌ Failed notification:", err.body || err);
         }
     }
 })();
