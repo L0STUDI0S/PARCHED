@@ -2,11 +2,10 @@ import express from "express";
 import bodyParser from "body-parser";
 import fs from "fs";
 import webpush from "web-push";
-import path from "path";
 
 const app = express();
 
-// Serve frontend from lowercase 'parched' folder
+// Serve frontend files from lowercase 'parched'
 app.use(express.static("parched"));
 
 app.use(bodyParser.json());
@@ -39,7 +38,7 @@ app.post("/notify", async (req, res) => {
     const payload = JSON.stringify({
         title: req.body.title,
         body: req.body.body,
-        icon: req.body.icon,
+        icon: req.body.icon
     });
 
     for (const sub of subscribers) {

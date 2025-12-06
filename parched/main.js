@@ -1,3 +1,5 @@
+const publicVapidKey = "BAgmoSmBrF591eDzhJ-54OZYJBU3gYt9j40ZxqQzTOURlcBiBmUqZHkVD5ja_0Wmp0dan0Q2wrphEO1pYHkzTmI";
+
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", async () => {
         try {
@@ -20,4 +22,11 @@ if ("serviceWorker" in navigator) {
             console.error("❌ Error during service worker registration or subscription:", err);
         }
     });
+}
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
 }
